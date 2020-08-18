@@ -3,13 +3,15 @@
     <h1>Simon The Game</h1>
 
     <ul class="simon">
-      <li class="blue" @click="sound(1); add(1)" :class="{ hl : hlBlue }"></li>
-      <li class="red" @click="sound(2); add(2)" :class="{ hl : hlRed }"></li><br>
-      <li class="yellow" @click="sound(3); add(3)" :class="{ hl : hlYellow }"></li>
-      <li class="green" @click="sound(4); add(4)" :class="{ hl : hlGreen }"></li>
+      <li class="blue" @click="add(1)" :class="{ hl : hlBlue }"></li>
+      <li class="red" @click="add(2)" :class="{ hl : hlRed }"></li><br>
+      <li class="yellow" @click="add(3)" :class="{ hl : hlYellow }"></li>
+      <li class="green" @click="add(4)" :class="{ hl : hlGreen }"></li>
     </ul>
 
     <h2>Round: {{ round }}</h2>
+
+    <p>{{ message }}</p>
 
     <button @click="start ? start = false : start = true; startGame()">
       {{start ? 'Stop' : 'Start'}}
@@ -17,7 +19,7 @@
 
     <h2>Level:</h2>
 
-    <form id="level" @change="log">
+    <form id="level">
 
       <label for="easy">
       Easy  
@@ -47,6 +49,7 @@ export default {
   },
   data(){
   	return{
+      message: "",
       round: 0,
       freeze: 1.5,
       start: false,
@@ -59,11 +62,9 @@ export default {
   	}
   },
   methods:{
-    log(){
-      console.log(this.freeze)
-    },
     startGame(){
       if(this.start){
+        this.message= ''
         this.addRandom()
         this.playSequence()
       }else this.endGame()
@@ -77,7 +78,6 @@ export default {
     },
 
     addRandom(){
-      this.round++
       this.sequence.push(this.getRandom())
     },
     getRandom(){
@@ -85,8 +85,8 @@ export default {
     },
 
     sound(n){
-       let sound =  new Audio(require(`@/assets/${n}.ogg`) )
-       return sound
+       return new Audio(require(`@/assets/${n}.ogg`) ).play()
+       
     },
     highlight(n){
     switch(n){
@@ -112,35 +112,33 @@ export default {
     },
 
     async playSequence(){
-      if (this.start){
+      if(this.start){
         for (let i=0; i<this.sequence.length; i++){
-          let tone =  this.sound(this.sequence[i])
-          tone.play()
+          this.sound(this.sequence[i])
           this.highlight(this.sequence[i])
-          await this.delay(0.5)
+          await this.delay(0.3)
           this.resetHighlight()
           await this.delay(this.freeze)
         }
-
       }
     },
-    async delay(sec){
+    delay(sec){
           return new Promise((res,rej)=>setTimeout(sec=>res(), sec*1e3))
     },
     async add(n){
         if (this.start){
           this.highlight(n)
-          let tone =  this.sound(n)
-          tone.play()
+          this.sound(n)
           this.resetHighlight()
           this.playerSequence.push(n)
 
           if(this.playerSequence[this.playerSequence.length - 1] !== this.sequence[this.playerSequence.length - 1]){
             this.endGame()
+            this.message = 'К сожалению, вы ошиблись. Нажмити кнопку - start, чтобы начать заново!'
           }
           if((this.playerSequence.length === this.sequence.length) && (this.playerSequence[this.playerSequence.length - 1] === this.sequence[this.sequence.length - 1])){
-             console.log(this.playerSequence)
             this.playerSequence = []
+            this.round++;
             await this.delay(1)
             this.startGame()
           }
@@ -157,8 +155,10 @@ export default {
 }
 
 
-h1,h2{
+h1,h2,p{
   text-align: center;
+  font-weight: bold;
+
 }
 
 button{
@@ -181,11 +181,11 @@ button{
     height: 200px;
     display: inline-block;
     opacity: .6;
-    &:active{
-      opacity:1;
-    };
-     &:hover {
+    &:hover {
       border: 3px solid black;
+    };
+    &:active{
+      opacity: 1;
     };
   }
   .blue{
