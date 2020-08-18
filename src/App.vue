@@ -17,21 +17,21 @@
 
     <h2>Level:</h2>
 
-    <form id="level">
+    <form id="level" @change="log">
 
       <label for="easy">
       Easy  
-      <input type="radio" id="easy" name="level" v-bind:value="{level: 'easy', delay: 1.5}" v-model="game"> 
+      <input type="radio" id="easy" name="level" v-bind:value="1.5" v-model="freeze"> 
       </label>
       
       <label for="normal">
       Normal  
-      <input type="radio" id="normal" name="level" v-bind:value="{level: 'normal', delay: 1}" v-model="game">
+      <input type="radio" id="normal" name="level" v-bind:value="1" v-model="freeze">
       </label>
 
       <label for="hard">
       Hard  
-      <input type="radio" id="hard" name="level" v-bind:value="{level: 'hard', delay: 0.4}" v-model="game">
+      <input type="radio" id="hard" name="level" v-bind:value="0.4" v-model="freeze">
       </label>
 
     </form>
@@ -48,10 +48,7 @@ export default {
   data(){
   	return{
       round: 0,
-      game: {
-        level: 'easy',
-        delay: 1.5
-      },
+      freeze: 1.5,
       start: false,
       sequence: [],
       playerSequence: [],
@@ -62,10 +59,12 @@ export default {
   	}
   },
   methods:{
+    log(){
+      console.log(this.freeze)
+    },
     startGame(){
       if(this.start){
         this.addRandom()
-        console.log(this.playerSequence[0])
         this.playSequence()
       }else this.endGame()
     },
@@ -82,7 +81,7 @@ export default {
       this.sequence.push(this.getRandom())
     },
     getRandom(){
-        return Math.floor(Math.random() * (4 - 1 + 1)) + 1;
+        return Math.floor(Math.random() * (4)) + 1;
     },
 
     sound(n){
@@ -120,7 +119,7 @@ export default {
           this.highlight(this.sequence[i])
           await this.delay(0.5)
           this.resetHighlight()
-          await this.delay(this.game.delay)
+          await this.delay(this.freeze)
         }
 
       }
@@ -139,7 +138,8 @@ export default {
           if(this.playerSequence[this.playerSequence.length - 1] !== this.sequence[this.playerSequence.length - 1]){
             this.endGame()
           }
-          if(this.playerSequence[this.playerSequence.length - 1] === this.sequence[this.playerSequence.length - 1]){
+          if((this.playerSequence.length === this.sequence.length) && (this.playerSequence[this.playerSequence.length - 1] === this.sequence[this.sequence.length - 1])){
+             console.log(this.playerSequence)
             this.playerSequence = []
             await this.delay(1)
             this.startGame()
